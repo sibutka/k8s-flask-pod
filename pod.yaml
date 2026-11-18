@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: flask-log-pod
+spec:
+  volumes:
+    - name: shared-logs
+      emptyDir: {}
+  containers:
+    - name: flask-writer
+      image: flask-k8s-app:latest
+      imagePullPolicy: Never
+      ports:
+        - containerPort: 5000
+      volumeMounts:
+        - name: shared-logs
+          mountPath: /logs
+    - name: log-reader
+      image: busybox
+      command: ["/bin/sh", "-c", "while [ ! -f /logs/app.log ]; do sleep 1; done; tail -f /logs/app.log"]
+      volumeMounts:
+        - name: shared-logs
+          mountPath: /logs
